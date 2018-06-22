@@ -196,7 +196,10 @@ class PasswordManager():
         for key, value in entry.items():
             if key == 'path':
                 continue
-            string += "%s: %s\n" % (key, value)
+            if key == 'otpauth':
+                string += "%s\n" % value
+            else:
+                string += "%s: %s\n" % (key, value)
         return string
 
     @staticmethod
@@ -520,6 +523,13 @@ class Keepass(KeepassX):
                     value = element.find('Value').text
                     break
         return value
+
+    def _getentry(self, element):
+        entry = super(Keepass, self)._getentry(element)
+        totp_seed = self._getvalue(element, 'TOTP Seed')
+        if totp_seed != '':
+            entry['otpauth'] = 'otpauth://totp/totp?secret=' + totp_seed.replace(' ', '').upper();
+        return entry;
 
     @classmethod
     def _getpath(cls, element, path=''):
